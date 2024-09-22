@@ -1,0 +1,90 @@
+[project]
+name = "he_scheduling"
+version = "0.1.0"
+description = "A FastAPI scheduling microservice"
+readme = "README.md"
+readme-content-type = "text/markdown"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Michiel Jansen", email = "michiel.mj@gmail.com" }
+]
+urls = { "Homepage" = "https://github.com/michielmj/he-scheduling" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI"
+]
+dependencies = [
+    "fastapi>=0.70.0",
+    "uvicorn>=0.15.0"
+]
+python-requires = ">=3.12"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "pytest"
+]
+
+[project.scripts]
+start-scheduling-service = "he_scheduling.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]  # Specify where pytest should look for tests
+addopts = "--disable-warnings"  # Additional options for pytest
+
+[tool.poetry]
+name = "he_scheduling"
+version = "0.1.0"
+description = "A FastAPI scheduling microservice"
+authors = ["Michiel Jansen <michiel.mj@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/michielmj/he-scheduling"
+repository = "https://github.com/michielmj/he-scheduling"
+documentation = "https://github.com/michielmj/he-scheduling"
+keywords = ["fastapi", "microservice", "api", "web", "scheduling"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+]
+packages = [{ include = "he_scheduling" }]
+
+# Specify the entry points for your CLI
+[tool.poetry.scripts]
+start-fastapi-server = "he_scheduling.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.6"
+
+# Optional dependencies for development
+ortools = "^9.11.4210"
+pytest = "^8.3.3"
+setuptools = "^75.1.0"
+httpx = "^0.27.2"
+[tool.poetry.extras]
+dev = ["black", "flake8", "pytest"]
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.3"
+black = "^24.8.0"
+flake8 = "^7.1.1"
+mypy = "^1.11.2"
+
+# If your project includes C++ extensions, this section is needed
+# [build-system]
+# requires = ["poetry-core>=1.0.0"]
+# build-backend = "poetry.core.masonry.api"
+
+# For optional environment variables (this can be useful if you load settings from a .env file)
+# [tool.poetry.env]
+# dotenv = ".env"
