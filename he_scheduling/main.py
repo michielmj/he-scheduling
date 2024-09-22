@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI
 from he_scheduling.core.version import get_version
 from he_scheduling.api.v1.master_planning import router as master_planning
@@ -30,3 +31,7 @@ def read_root():
         },
         "message": "Welcome to the API! Visit /docs for the interactive API documentation.",
     }
+
+
+def run():
+    uvicorn.run("he_scheduling.main:app", host="0.0.0.0", port=8000)
