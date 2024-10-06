@@ -163,6 +163,10 @@ class MPModelRequest(BaseModel):
         ...,
         description="Scheduling horizon defining the maximum time frame for scheduling tasks."
     )
+    time_limit: int = Field(
+        10,
+        description="Solver time limit in seconds (default=10)."
+    )
 
 
 # Response Model
