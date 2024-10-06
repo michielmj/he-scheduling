@@ -40,8 +40,10 @@ def sample_request_data():
             "id": "P1",
             "product_type": "TypeA",
             "target_date": 15,
+            "late_date": 20,
             "weight_positive": 2,
             "weight_negative": 3,
+            "weight_late": 30,
             "tasks": {
                 "T1": {
                     "id": "T1",
@@ -69,8 +71,10 @@ def sample_request_data():
             "id": "P2",
             "product_type": "TypeB",
             "target_date": 20,
+            "late_date": 30,
             "weight_positive": 1,
             "weight_negative": 4,
+            "weight_late": 40,
             "tasks": {
                 "T3": {
                     "id": "T3",
@@ -199,8 +203,10 @@ def test_schedule_endpoint_invalid_input():
                 "id": "P1",
                 "product_type": "TypeA",
                 "target_date": 15,
+                "late_date": 20,
                 "weight_positive": 2,
                 "weight_negative": 3,
+                "weight_late": 30,
                 "tasks": {
                     "T1": {
                         "id": "T1",
