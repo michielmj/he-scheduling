@@ -16,7 +16,7 @@ async def schedule_projects(request: MPModelRequest):
         horizon=request.horizon,
     )
     scheduler.build_model()
-    status = scheduler.solve()
+    status = scheduler.solve(time_limit=request.time_limit)
     solution = scheduler.get_solution()
 
     return MPModelResponse(
