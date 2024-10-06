@@ -33,8 +33,10 @@ def sample_data():
             id='P1',
             product_type='TypeA',
             target_date=15,
+            latest_date=20,
             weight_positive=2,
             weight_negative=3,
+            weight_late=30,
             tasks={
                 'T1': MPTask(
                     id='T1',
@@ -60,6 +62,7 @@ def sample_data():
             target_date=20,
             weight_positive=1,
             weight_negative=4,
+            weight_late=40,
             tasks={
                 'T3': MPTask(
                     id='T3',
@@ -164,8 +167,10 @@ def test_model_builder_invalid_input():
                 id='P1',
                 product_type='TypeA',
                 target_date=15,
+                latest_date=20,
                 weight_positive=2,
                 weight_negative=3,
+                weight_late=30,
                 tasks={
                     'T1': MPTask(
                         id='T1',
@@ -261,8 +266,10 @@ def test_model_builder_no_resources():
             id='P1',
             product_type='TypeA',
             target_date=15,
+            latest_date=20,
             weight_positive=2,
             weight_negative=3,
+            weight_late=30,
             tasks={
                 'T1': MPTask(
                     id='T1',

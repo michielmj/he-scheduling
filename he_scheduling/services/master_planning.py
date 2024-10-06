@@ -178,14 +178,14 @@ class MasterPlanningModelBuilder:
             unique_task_id = f'{project.id}_{last_task_id}'
             project_finish = self.task_ends[unique_task_id]
 
-            deviation = self.model.NewIntVar(-self.horizon, self.horizon, f'deviation_{project.id}')
-            self.model.Add(deviation == project_finish - project.target_date)
+            target_deviation = self.model.NewIntVar(-self.horizon, self.horizon, f'target_deviation_{project.id}')
+            self.model.Add(target_deviation == project_finish - project.target_date)
 
             # Positive and negative deviations
             positive_deviation = self.model.NewIntVar(0, self.horizon, f'pos_dev_{project.id}')
             negative_deviation = self.model.NewIntVar(0, self.horizon, f'neg_dev_{project.id}')
-            self.model.AddMaxEquality(positive_deviation, [deviation, 0])
-            self.model.AddMinEquality(negative_deviation, [deviation, 0])
+            self.model.AddMaxEquality(positive_deviation, [target_deviation, 0])
+            self.model.AddMinEquality(negative_deviation, [target_deviation, 0])
 
             # Weighted deviations
             weighted_positive = self.model.NewIntVar(0, self.horizon * project.weight_positive,
@@ -197,6 +197,21 @@ class MasterPlanningModelBuilder:
 
             objective_terms.append(weighted_positive)
             objective_terms.append(weighted_negative)
+
+            if project.weight_late > 0:
+                lateness = self.model.NewIntVar(-self.horizon, self.horizon, f'lateness_{project.id}')
+                self.model.Add(lateness == project_finish -
+                               (project.target_date if project.latest_date is None else project.latest_date))
+
+                tardiness = self.model.NewIntVar(0, self.horizon, f'tardiness_{project.id}')
+                self.model.AddMaxEquality(tardiness, [lateness, 0])
+
+                weighted_tardiness = self.model.NewIntVar(0, self.horizon * project.weight_late,
+                                                          f'weighted_tard_{project.id}')
+
+                self.model.Add(weighted_tardiness == tardiness * project.weight_late)
+
+                objective_terms.append(weighted_tardiness)
 
         self.model.Minimize(sum(objective_terms))
         self.logger.debug('Objective defined.')

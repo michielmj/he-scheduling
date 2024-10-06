@@ -70,6 +70,11 @@ class MPProject(BaseModel):
         ge=0,
         description="Desired completion date for the project."
     )
+    latest_date: Optional[int] = Field(
+        None,
+        ge=0,
+        description="Latest completion date for the project."
+    )
     weight_positive: int = Field(
         ge=0,
         description="Weight assigned to positive deviations (project finishing after the target date)."
@@ -77,6 +82,11 @@ class MPProject(BaseModel):
     weight_negative: int = Field(
         ge=0,
         description="Weight assigned to negative deviations (project finishing before the target date)."
+    )
+    weight_late: int = Field(
+        0,
+        ge=0,
+        description="Weight assigned to lateness (project finishing after latest date)."
     )
     tasks: Dict[str, MPTask] = Field(
         ...,
