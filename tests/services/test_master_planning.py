@@ -55,6 +55,7 @@ def sample_data():
                     alternative_resources=[2],
                 ),
             },
+            finish_task_id='T1',
         ),
         MPProject(
             id='P2',
@@ -81,6 +82,7 @@ def sample_data():
                     alternative_resources=[3],
                 ),
             },
+            finish_task_id='T4',
         ),
     ]
 
@@ -279,6 +281,7 @@ def test_model_builder_no_resources():
                     alternative_resources=[],  # Resource ID that doesn't exist
                 ),
             },
+            finish_task_id='T1',
         ),
     ]
     period_constraints = []
@@ -327,8 +330,8 @@ def test_model_builder_task_without_load(sample_data):
 def test_model_builder_task_with_predecessors(sample_data):
     """Test that the model builder correctly enforces task predecessors."""
     # Add a chain of tasks with predecessors
-    sample_data['projects'][0].tasks['T4'] = MPTask(
-        id='T4',
+    sample_data['projects'][0].tasks['T5'] = MPTask(
+        id='T5',
         duration=2,
         load=5,
         predecessors=[MPPredecessor(task_id='T2', min_gap=1, max_gap=1)],
@@ -344,14 +347,14 @@ def test_model_builder_task_with_predecessors(sample_data):
     status = scheduler.solve()
     assert status.status_code in [cp_model.OPTIMAL, cp_model.FEASIBLE], "Solver did not find a solution."
     solution = scheduler.get_solution()
-    # Check that T4 starts exactly 1 time unit after T2 ends
+    # Check that T5 starts exactly 1 time unit after T2 ends
     t2_end = None
-    t4_start = None
+    t5_start = None
     for task_solution in solution:
         if task_solution.task_id == 'T2':
             t2_end = task_solution.end
-        if task_solution.task_id == 'T4':
-            t4_start = task_solution.start
+        if task_solution.task_id == 'T5':
+            t5_start = task_solution.start
     assert t2_end is not None, "Task T2 should be in the solution."
-    assert t4_start is not None, "Task T4 should be in the solution."
-    assert t4_start == t2_end + 1, "Task T4 should start exactly 1 time unit after T2 ends."
+    assert t5_start is not None, "Task T4 should be in the solution."
+    assert t5_start == t2_end + 1, "Task T4 should start exactly 1 time unit after T2 ends."

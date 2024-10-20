@@ -174,8 +174,7 @@ class MasterPlanningModelBuilder:
 
         for project in self.projects:
             # Get the last task in the project
-            last_task_id = list(project.tasks.keys())[-1]
-            unique_task_id = f'{project.id}_{last_task_id}'
+            unique_task_id = f'{project.id}_{project.finish_task_id}'
             project_finish = self.task_ends[unique_task_id]
 
             target_deviation = self.model.NewIntVar(-self.horizon, self.horizon, f'target_deviation_{project.id}')
