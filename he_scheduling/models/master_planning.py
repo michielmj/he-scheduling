@@ -91,6 +91,10 @@ class MPProject(BaseModel):
     tasks: Dict[str, MPTask] = Field(
         ...,
         description="Dictionary of tasks belonging to the project, keyed by task ID."
+    ),
+    finish_task_id: str = Field(
+        ...,
+        description="Id of the last task to be completed in the project."
     )
 
 
