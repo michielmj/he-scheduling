@@ -19,6 +19,7 @@ class MasterPlanningModelBuilder:
             period_constraints: List[MPPeriodConstraint],
             horizon: int,
             overload_penalty_coefficient: Optional[int] = 1000,
+            fixed_violation_penalty_coefficient: Optional[int] = 100,
             logger: Optional[logging.Logger] = None,
     ):
         self.projects = projects
@@ -27,6 +28,8 @@ class MasterPlanningModelBuilder:
         self.horizon = horizon
         self.overload_costs = []
         self.overload_penalty_coefficient = overload_penalty_coefficient
+        self.fixed_violation_penalty_coefficient = fixed_violation_penalty_coefficient
+        self.fixed_violation_costs = []
         self.model = cp_model.CpModel()
         self.solver = cp_model.CpSolver()
 
@@ -42,7 +45,7 @@ class MasterPlanningModelBuilder:
 
         # Preprocess resource constraints
         self.resource_periods = {}  # Key: resource_id, Value: List of (start, end, capacity)
-        self.preprocess_resource_capacities()
+        self._preprocess_resource_capacities()
 
         # Solution data
         self.solution = []
@@ -80,11 +83,50 @@ class MasterPlanningModelBuilder:
                     )
         self.logger.debug('Variables created.')
 
+    def _add_task_end_date_hints(self):
+        self.logger.debug('Adding task end date hints...')
+        self.fixed_violation_costs = []
+
+        for project in self.projects:
+            for task_id, task in project.tasks.items():
+                if task.end_date_hint is not None and task.fixed_end_date:
+                    unique_task_id = f'{project.id}_{task_id}'
+                    end_var = self.task_ends[unique_task_id]
+                    start_var = self.task_starts[unique_task_id]
+
+                    # Provide the end date hint to the solver
+                    self.model.AddHint(end_var, task.end_date_hint)
+                    self.model.AddHint(start_var, task.end_date_hint - task.duration)
+
+                    # Create deviation variable
+                    deviation = self.model.new_int_var(-self.horizon, self.horizon, f'deviation_{unique_task_id}')
+                    self.model.add(deviation == end_var - task.end_date_hint)
+
+                    # Absolute deviation
+                    abs_deviation = self.model.new_int_var(0, self.horizon, f'abs_deviation_{unique_task_id}')
+                    self.model.add_abs_equality(abs_deviation, deviation)
+
+                    # Multiply by penalty coefficient
+                    penalty = self.model.NewIntVar(
+                        0,
+                        self.fixed_violation_penalty_coefficient * self.horizon,
+                        f'penalty_{unique_task_id}'
+                    )
+                    self.model.add_multiplication_equality(
+                        penalty,
+                        [abs_deviation, self.fixed_violation_penalty_coefficient])
+
+                    # Add to objective terms
+                    self.fixed_violation_costs.append(penalty)
+
+        self.logger.debug('Task end date hints added.')
+
     def _add_constraints(self):
         self.logger.debug('Adding constraints...')
         self._add_precedence_constraints()
         self._add_resource_constraints()
         self._add_period_constraints()
+        self._add_task_end_date_hints()
         self.logger.debug('Constraints added.')
 
     def _add_precedence_constraints(self):
@@ -97,13 +139,15 @@ class MasterPlanningModelBuilder:
                     pred_task_id = predecessor.task_id
                     unique_pred_task_id = f'{project.id}_{pred_task_id}'
                     min_gap = predecessor.min_gap
-                    max_gap = predecessor.max_gap if predecessor.max_gap is not None else self.horizon
+
                     # Enforce the gaps
                     self.model.add(self.task_starts[unique_task_id] >= self.task_ends[unique_pred_task_id] + min_gap)
-                    self.model.add(self.task_starts[unique_task_id] <= self.task_ends[unique_pred_task_id] + max_gap)
+                    if predecessor.max_gap is not None:
+                        self.model.add(self.task_starts[unique_task_id] <=
+                                       self.task_ends[unique_pred_task_id] + predecessor.max_gap)
         self.logger.debug('Precedence constraints added.')
 
-    def preprocess_resource_capacities(self):
+    def _preprocess_resource_capacities(self):
         self.resource_periods = {}  # Key: resource_id, Value: List of (start, end, capacity)
         for res_id, resource in self.resources.items():
             capacity_profile = resource.capacity_profile  # List of (date, capacity)
@@ -135,10 +179,6 @@ class MasterPlanningModelBuilder:
                 [resource_var],
                 [[res_id] for res_id in task.alternative_resources]
             )
-
-        # debug
-        for task_end in self.task_ends.values():
-            self.model.add(task_end < 20)
 
         self.overload_costs = []  # Store overload costs for the objective function
 
@@ -277,6 +317,9 @@ class MasterPlanningModelBuilder:
 
         # Add overload costs to the objective
         objective_terms.extend(self.overload_costs)
+
+        # Add task end date penalties
+        objective_terms.extend(self.fixed_violation_costs)
 
         self.model.Minimize(sum(objective_terms))
         self.logger.debug('Objective defined.')

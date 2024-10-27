@@ -70,6 +70,18 @@ class MPTask(BaseModel):
         ...,
         description="List of resource IDs that can be assigned to this task."
     )
+    end_date_hint: Optional[int] = Field(
+        default=None,
+        ge=0,
+        description="Hint for the desired end date of the task."
+    )
+    fixed_end_date: Optional[bool] = Field(
+        default=False,
+        description=(
+            "If True, penalize deviations from end_date_hint using "
+            "fixed_violation_penalty_coefficient."
+        )
+    )
 
 
 class MPProject(BaseModel):
