@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from pydantic import BaseModel, Field, model_validator
+from typing import List, Dict, Optional, Tuple
 
 
 class MPResource(BaseModel):
@@ -11,10 +11,25 @@ class MPResource(BaseModel):
         ...,
         description="Name of the resource."
     )
-    capacity_per_day: int = Field(
-        ...,
-        description="Daily capacity of the resource in terms of the maximum load it can handle."
+    capacity_per_day: Optional[int] = Field(
+        default=None,
+        description="Default daily capacity of the resource when capacity_profile is not provided."
     )
+    capacity_profile: Optional[List[Tuple[int, int]]] = Field(
+        default=None,
+        description=(
+            "List of tuples representing the resource's capacity over time. "
+            "Each tuple consists of (date, capacity), where 'date' is the start date "
+            "(integer) from which the 'capacity' applies. Dates should be in ascending order."
+        )
+    )
+
+    @model_validator(mode='after')
+    def check_capacity(self):
+        if self.capacity_per_day is None and self.capacity_profile is None:
+            raise ValueError('Resources need to have either `capacity_per_day` or `capacity_profile` defined.')
+
+        return self
 
 
 class MPPredecessor(BaseModel):
@@ -71,7 +86,7 @@ class MPProject(BaseModel):
         description="Desired completion date for the project."
     )
     latest_date: Optional[int] = Field(
-        None,
+        default=None,
         ge=0,
         description="Latest completion date for the project."
     )
@@ -84,7 +99,7 @@ class MPProject(BaseModel):
         description="Weight assigned to negative deviations (project finishing before the target date)."
     )
     weight_late: int = Field(
-        0,
+        default=0,
         ge=0,
         description="Weight assigned to lateness (project finishing after latest date)."
     )
@@ -96,6 +111,23 @@ class MPProject(BaseModel):
         ...,
         description="Id of the last task to be completed in the project."
     )
+
+    @model_validator(mode='after')
+    def check_latest(self):
+        if self.weight_late > 0 and self.latest_date is None:
+            raise ValueError('Field `latest_date` is missing. (Latest date is required if `weight_late` is positive.')
+
+        return self
+
+    @model_validator(mode='after')
+    def check_finish_task(self):
+        if not any([task_id == self.finish_task_id for task_id in self.tasks]):
+            raise ValueError('`finish_task_id` not found in tasks.')
+
+        if not all([task_id == task.id for task_id, task in self.tasks.items()]):
+            raise ValueError('Task id mismatch. Task key and id not the same.')
+
+        return self
 
 
 class MPPeriodConstraint(BaseModel):
@@ -178,8 +210,12 @@ class MPModelRequest(BaseModel):
         description="Scheduling horizon defining the maximum time frame for scheduling tasks."
     )
     time_limit: int = Field(
-        10,
+        default=10,
         description="Solver time limit in seconds (default=10)."
+    )
+    overload_penalty_coefficient: int = Field(
+        default=1000,
+        description="Model penalty for overloading a capacity in a period (default=1000)."
     )
 
 
