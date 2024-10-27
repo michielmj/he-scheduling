@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import List, Dict, Optional, Tuple, Self
+from typing import List, Dict, Optional, Tuple
 
 
 class MPResource(BaseModel):
@@ -25,7 +25,7 @@ class MPResource(BaseModel):
     )
 
     @model_validator(mode='after')
-    def check_capacity(self) -> Self:
+    def check_capacity(self):
         if self.capacity_per_day is None and self.capacity_profile is None:
             raise ValueError('Resources need to have either `capacity_per_day` or `capacity_profile` defined.')
 
@@ -99,7 +99,7 @@ class MPProject(BaseModel):
         description="Weight assigned to negative deviations (project finishing before the target date)."
     )
     weight_late: int = Field(
-        0,
+        default=0,
         ge=0,
         description="Weight assigned to lateness (project finishing after latest date)."
     )
@@ -113,14 +113,14 @@ class MPProject(BaseModel):
     )
 
     @model_validator(mode='after')
-    def check_latest(self) -> Self:
+    def check_latest(self):
         if self.weight_late > 0 and self.latest_date is None:
             raise ValueError('Field `latest_date` is missing. (Latest date is required if `weight_late` is positive.')
 
         return self
 
     @model_validator(mode='after')
-    def check_finish_task(self) -> Self:
+    def check_finish_task(self):
         if not any([task_id == self.finish_task_id for task_id in self.tasks]):
             raise ValueError('`finish_task_id` not found in tasks.')
 
@@ -210,8 +210,12 @@ class MPModelRequest(BaseModel):
         description="Scheduling horizon defining the maximum time frame for scheduling tasks."
     )
     time_limit: int = Field(
-        10,
+        default=10,
         description="Solver time limit in seconds (default=10)."
+    )
+    overload_penalty_coefficient: int = Field(
+        default=1000,
+        description="Model penalty for overloading a capacity in a period (default=1000)."
     )
 
 

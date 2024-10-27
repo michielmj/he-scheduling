@@ -168,8 +168,8 @@ class MasterPlanningModelBuilder:
                             0, period_end,
                             f'overlap_end_{unique_task_id}_on_{res_id}_{period_start}_{period_end}')
 
-                        self.model.AddMaxEquality(overlap_start, [start_var, period_start])
-                        self.model.AddMinEquality(overlap_end, [end_var, period_end])
+                        self.model.add_max_equality(overlap_start, [start_var, period_start])
+                        self.model.add_min_equality(overlap_end, [end_var, period_end])
 
                         # We may ignore this interval only if there is no overlap or if the task is not assigned to
                         # the resource
@@ -202,7 +202,7 @@ class MasterPlanningModelBuilder:
                     overload = self.model.new_int_var(0, sum(demands) - capacity,
                                                       f'overload_{res_id}_{period_start}_{period_end}')
 
-                    self.model.AddCumulative(intervals, demands, capacity + overload)
+                    self.model.add_cumulative(intervals, demands, capacity + overload)
 
                     # Add overload penalty to the objective function
                     overload_cost = self.model.new_int_var(
@@ -259,8 +259,8 @@ class MasterPlanningModelBuilder:
                                                         f'pos_dev_{project.id}')
             negative_deviation = self.model.new_int_var(0, self.horizon * project.weight_negative,
                                                         f'neg_dev_{project.id}')
-            self.model.AddMaxEquality(positive_deviation, [project.weight_positive * target_deviation, 0])
-            self.model.AddMaxEquality(negative_deviation, [-project.weight_negative * target_deviation, 0])
+            self.model.add_max_equality(positive_deviation, [project.weight_positive * target_deviation, 0])
+            self.model.add_max_equality(negative_deviation, [-project.weight_negative * target_deviation, 0])
 
             objective_terms.append(positive_deviation)
             objective_terms.append(negative_deviation)
@@ -271,7 +271,7 @@ class MasterPlanningModelBuilder:
 
                 tardiness = self.model.new_int_var(0, self.horizon * project.weight_late,
                                                    f'tardiness_{project.id}')
-                self.model.AddMaxEquality(tardiness, [lateness * project.weight_late, 0])
+                self.model.add_max_equality(tardiness, [lateness * project.weight_late, 0])
 
                 objective_terms.append(tardiness)
 
