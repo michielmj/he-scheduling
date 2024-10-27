@@ -36,7 +36,6 @@ def sample_data():
             latest_date=20,
             weight_positive=2,
             weight_negative=3,
-            weight_late=30,
             tasks={
                 'T1': MPTask(
                     id='T1',
@@ -63,7 +62,6 @@ def sample_data():
             target_date=20,
             weight_positive=1,
             weight_negative=4,
-            weight_late=40,
             tasks={
                 'T3': MPTask(
                     id='T3',
@@ -182,6 +180,7 @@ def test_model_builder_invalid_input():
                         alternative_resources=[1],
                     ),
                 },
+                finish_task_id='T1',
             ),
         ]
         period_constraints = []
@@ -358,3 +357,5 @@ def test_model_builder_task_with_predecessors(sample_data):
     assert t2_end is not None, "Task T2 should be in the solution."
     assert t5_start is not None, "Task T4 should be in the solution."
     assert t5_start == t2_end + 1, "Task T4 should start exactly 1 time unit after T2 ends."
+
+
