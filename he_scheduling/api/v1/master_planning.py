@@ -14,7 +14,8 @@ async def schedule_projects(request: MPModelRequest):
         resources=request.resources,
         period_constraints=request.period_constraints,
         horizon=request.horizon,
-        overload_penalty_coefficient=request.overload_penalty_coefficient
+        overload_penalty_coefficient=request.overload_penalty_coefficient,
+        fixed_violation_penalty_coefficient=request.fixed_violation_penalty_coefficient
     )
     scheduler.build_model()
     status = scheduler.solve(time_limit=request.time_limit)

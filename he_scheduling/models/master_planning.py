@@ -23,6 +23,10 @@ class MPResource(BaseModel):
             "(integer) from which the 'capacity' applies. Dates should be in ascending order."
         )
     )
+    overloading_allowed: Optional[bool] = Field(
+        default=True,
+        description="If flag is set to false, capacity may not be overloaded (default=true)."
+    )
 
     @model_validator(mode='after')
     def check_capacity(self):
@@ -228,6 +232,10 @@ class MPModelRequest(BaseModel):
     overload_penalty_coefficient: int = Field(
         default=1000,
         description="Model penalty for overloading a capacity in a period (default=1000)."
+    )
+    fixed_violation_penalty_coefficient: int = Field(
+        default=1000,
+        description="Model penalty for deviating from the fixed end date specified on a task (default=1000)."
     )
 
 
