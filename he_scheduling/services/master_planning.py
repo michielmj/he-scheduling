@@ -19,7 +19,7 @@ class MasterPlanningModelBuilder:
             period_constraints: List[MPPeriodConstraint],
             horizon: int,
             overload_penalty_coefficient: Optional[int] = 1000,
-            fixed_violation_penalty_coefficient: Optional[int] = 100,
+            fixed_violation_penalty_coefficient: Optional[int] = 1000,
             logger: Optional[logging.Logger] = None,
     ):
         self.projects = projects
@@ -238,18 +238,21 @@ class MasterPlanningModelBuilder:
 
                 # add overload costs only if there are intervals and the total demands may exceed capacity
                 if intervals and sum(demands) > capacity:
-                    # Create an overload variable for this resource and period
-                    overload = self.model.new_int_var(0, sum(demands) - capacity,
-                                                      f'overload_{res_id}_{period_start}_{period_end}')
+                    if self.resources[res_id].overloading_allowed:
+                        # Create an overload variable for this resource and period
+                        overload = self.model.new_int_var(0, sum(demands) - capacity,
+                                                          f'overload_{res_id}_{period_start}_{period_end}')
 
-                    self.model.add_cumulative(intervals, demands, capacity + overload)
+                        self.model.add_cumulative(intervals, demands, capacity + overload)
 
-                    # Add overload penalty to the objective function
-                    overload_cost = self.model.new_int_var(
-                        0, self.overload_penalty_coefficient * capacity * (period_end - period_start),
-                        f'overload_cost_{res_id}_{period_start}_{period_end}')
-                    self.model.add_multiplication_equality(overload_cost, [overload, self.overload_penalty_coefficient])
-                    self.overload_costs.append(overload_cost)
+                        # Add overload penalty to the objective function
+                        overload_cost = self.model.new_int_var(
+                            0, self.overload_penalty_coefficient * capacity * (period_end - period_start),
+                            f'overload_cost_{res_id}_{period_start}_{period_end}')
+                        self.model.add_multiplication_equality(overload_cost, [overload, self.overload_penalty_coefficient])
+                        self.overload_costs.append(overload_cost)
+                    else:  # overloading not allowed
+                        self.model.add_cumulative(intervals, demands, capacity)
 
         self.logger.debug('Resource constraints added.')
 
