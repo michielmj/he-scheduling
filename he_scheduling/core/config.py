@@ -1,46 +1,49 @@
 import os
-from pydantic import BaseSettings
+from typing import Union, Annotated
+from pydantic_core import Url
+from pydantic import Field, AmqpDsn, RedisDsn, UrlConstraints
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+SQLAlchemyDSN = Annotated[Url, UrlConstraints(
+    host_required=True,
+    allowed_schemes=['db+sqlite', 'db+mysql', 'db+postgresql', 'db+oracle']
+)]
+"""A type that will accept any SQLAlchemy DSN.
+
+* User info required
+* TLD not required
+* Host required
+"""
 
 
 class Settings(BaseSettings):
     """Base configuration class that defines the common settings."""
 
-    # General settings
-    APP_NAME: str = "YourApp"
-    DEBUG: bool = False
+    model_config = SettingsConfigDict(env_file='.env', extra='allow')
 
-    # Database settings
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    # General settings
+    app_name: str = "he_scheduling"
+    debug: bool = False
+
+    # Celery settings
+    celery_broker: Union[AmqpDsn, RedisDsn] = Field('amqp://guest@localhost/', alias="CELERY_BROKER")
+    celery_result_backend: SQLAlchemyDSN = Field('db+postgresql://root@localhost/postgres',
+                                                 alias="CELERY_RESULT_BACKEND")
 
     # Logging settings
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-
-    # Other settings
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey")
-
-    class Config:
-        env_file = ".env"  # Load from a .env file if present
-
-
-class DevelopmentConfig(Settings):
-    """Development environment-specific configuration."""
-    DEBUG: bool = True
-    LOG_LEVEL: str = "DEBUG"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
+    log_level: str = Field("INFO", alias="LOG_LEVEL")
 
 
 class ProductionConfig(Settings):
-    """Production environment-specific configuration."""
-    DEBUG: bool = False
-    LOG_LEVEL: str = "ERROR"
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@dbserver/prod_db")
+    pass
+
+
+class DevelopmentConfig(Settings):
+    pass
 
 
 class TestingConfig(Settings):
-    """Testing environment-specific configuration."""
-    DEBUG: bool = True
-    TESTING: bool = True
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+    pass
 
 
 # Function to load the appropriate configuration based on the environment
@@ -57,4 +60,3 @@ def get_config():
 
 # Load the configuration based on the current environment
 config = get_config()
-

@@ -249,3 +249,10 @@ class MPModelResponse(BaseModel):
         default_factory=list,
         description="List of task solutions representing the scheduling results."
     )
+
+
+# Task ID Model
+class MPJobStatusResponse(BaseModel):
+    job_id: str
+    status: str
+    result: MPModelResponse = None
