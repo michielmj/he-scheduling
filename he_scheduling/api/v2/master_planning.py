@@ -30,7 +30,7 @@ async def job_status(job_id: str):
     elif task_result.state == states.SUCCESS:
         return {"job_id": job_id, "status": "completed", "result": task_result.result}
     elif task_result.state == states.FAILURE:
-        return {"job_id": job_id, "status": "failed", "result": str(task_result.result)}
+        return {"job_id": job_id, "status": "failed", "error": str(task_result.result)}
     else:
         return {"job_id": job_id, "status": task_result.state}
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Union
 
 
 class MPResource(BaseModel):
@@ -256,3 +256,4 @@ class MPJobStatusResponse(BaseModel):
     job_id: str
     status: str
     result: MPModelResponse = None
+    error: str = None

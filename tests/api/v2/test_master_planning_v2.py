@@ -65,6 +65,7 @@ def test_get_job_status_pending(mocker):
     mock_result = MagicMock()
     mock_result.state = states.PENDING
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.get("/api/v2/master-planning/job_status/test-job-id")
     assert response.status_code == 200
@@ -84,6 +85,7 @@ def test_get_job_status_completed(mocker):
         ]
     }
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.get("/api/v2/master-planning/job_status/test-job-id")
     assert response.status_code == 200
@@ -100,13 +102,14 @@ def test_get_job_status_failed(mocker):
     mock_result.state = states.FAILURE
     mock_result.result = "Task failed due to an error."
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.get("/api/v2/master-planning/job_status/test-job-id")
     assert response.status_code == 200
     data = response.json()
     assert data["job_id"] == "test-job-id"
     assert data["status"] == "failed"
-    assert data["result"] == "Task failed due to an error."
+    assert data["error"] == "Task failed due to an error."
 
 
 def test_cancel_job_pending(mocker):
@@ -114,6 +117,7 @@ def test_cancel_job_pending(mocker):
     mock_result = MagicMock()
     mock_result.state = states.PENDING
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.delete("/api/v2/master-planning/cancel_job/test-job-id")
     assert response.status_code == 200
@@ -127,6 +131,7 @@ def test_cancel_job_started(mocker):
     mock_result = MagicMock()
     mock_result.state = states.STARTED
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.delete("/api/v2/master-planning/cancel_job/test-job-id")
     assert response.status_code == 200
@@ -140,6 +145,7 @@ def test_cancel_job_completed(mocker):
     mock_result = MagicMock()
     mock_result.state = states.SUCCESS
     mocker.patch("celery.result.AsyncResult", return_value=mock_result)
+    mocker.patch("he_scheduling.api.v2.master_planning.AsyncResult", return_value=mock_result)
 
     response = client.delete("/api/v2/master-planning/cancel_job/test-job-id")
     assert response.status_code == 400
