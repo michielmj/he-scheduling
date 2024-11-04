@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "he_scheduling"
-version = "0.5.0"
+version = "0.5.1"
 description = "A FastAPI scheduling microservice"
 authors = ["Michiel Jansen <michiel.mj@gmail.com>"]
 license = "Apache-2.0"

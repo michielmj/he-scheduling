@@ -11,6 +11,9 @@ ENV RABBITMQ_PASSWORD=he_scheduling
 ENV RABBITMQ_PORT=5672
 ENV FLOWER_PORT=5555
 ENV FASTAPI_PORT=8000
+ENV CELERY_BROKER="amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@localhost:${RABBITMQ_PORT}//"
+ENV CELERY_RESULT_BACKEND="db+postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DB}"
+
 
 # Install required system dependencies with specific versions
 RUN apt-get update && apt-get install -y \
@@ -23,7 +26,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Install Python dependencies using the `he_scheduling` package
-RUN pip install he_scheduling psycopg2-binary
+RUN pip install he_scheduling psycopg2-binary celery flower
 
 # Configure PostgreSQL: Initialize the database and create a user
 RUN service postgresql start && \

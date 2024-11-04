@@ -8,3 +8,4 @@ __pycache__/
 /dist/
 logs/
 poetry.lock
+/.pytest_cache/
