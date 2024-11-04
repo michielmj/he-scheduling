@@ -2,21 +2,21 @@
 FROM python:3.11-slim
 
 # Environment variables with default values (can be overridden at runtime)
-ENV POSTGRES_USER=user
-ENV POSTGRES_PASSWORD=password
-ENV POSTGRES_DB=dbname
+ENV POSTGRES_USER=he_scheduling
+ENV POSTGRES_PASSWORD=he_scheduling
+ENV POSTGRES_DB=he_scheduling
 ENV POSTGRES_PORT=5432
-ENV RABBITMQ_USER=user
-ENV RABBITMQ_PASSWORD=password
+ENV RABBITMQ_USER=he_scheduling
+ENV RABBITMQ_PASSWORD=he_scheduling
 ENV RABBITMQ_PORT=5672
 ENV FLOWER_PORT=5555
 ENV FASTAPI_PORT=8000
 
 # Install required system dependencies with specific versions
 RUN apt-get update && apt-get install -y \
-    libpq-dev=14.9-0+deb11u1 \
-    postgresql=13+225 \
-    rabbitmq-server=3.8.16-1 \
+    libpq-dev \
+    postgresql \
+    rabbitmq-server \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
@@ -41,6 +41,6 @@ CMD /bin/bash -c "\
     rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASSWORD} && \
     rabbitmqctl set_user_tags ${RABBITMQ_USER} administrator && \
     rabbitmqctl set_permissions -p / ${RABBITMQ_USER} '.*' '.*' '.*' && \
-    celery -A main.celery worker --loglevel=info & \
-    flower --broker=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@localhost:${RABBITMQ_PORT}// --port=${FLOWER_PORT} & \
-    uvicorn main:app --host 0.0.0.0 --port=${FASTAPI_PORT}"
+    celery -A he_scheduling.main.celery worker --loglevel=info & \
+    celery -A he_scheduling.main.celery flower --loglevel=info & \
+    uvicorn he_scheduling.main:app --host 0.0.0.0 --port=${FASTAPI_PORT}"

@@ -21,14 +21,6 @@ services:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # RabbitMQ management UI
 
-  flower:
-    image: mher/flower:${FLOWER_VERSION:-2.0}
-    container_name: dev_flower
-    command: ["celery", "flower", "--port=${FLOWER_PORT:-5555}", "--broker=amqp://${RABBITMQ_USER:-dev_rabbit}:${RABBITMQ_PASSWORD:-dev_rabbit_pass_123}@rabbitmq:${RABBITMQ_PORT:-5672}//"]
-    ports:
-      - "${FLOWER_PORT:-5555}:5555"
-    depends_on:
-      - rabbitmq
-
 volumes:
   postgres_data:
+

@@ -15,7 +15,7 @@ async def submit_problem(problem: MPModelRequest):
     # Generate a unique job ID for tracking
     job_id = str(uuid.uuid4())
     # Submit the task to Celery
-    task = solve_scheduling_problem.apply_async(args=[problem], task_id=job_id)
+    task = solve_scheduling_problem.apply_async(args=[problem.dict()], task_id=job_id)
     return {"job_id": task.id, "status": "submitted"}
 
 

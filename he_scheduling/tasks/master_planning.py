@@ -4,7 +4,10 @@ from he_scheduling.services.master_planning import MasterPlanningModelBuilder
 
 
 @celery.task(bind=True)
-def solve_scheduling_problem(self, request: MPModelRequest) -> MPModelResponse:
+def solve_scheduling_problem(self, request: dict) -> MPModelResponse:
+
+    request = MPModelRequest.model_validate(request)
+
     # Instantiate and use the MasterPlanningModelBuilder
     scheduler = MasterPlanningModelBuilder(
         projects=request.projects,
@@ -21,4 +24,4 @@ def solve_scheduling_problem(self, request: MPModelRequest) -> MPModelResponse:
     return MPModelResponse(
         solver_status=status,
         solution=solution
-    )
+    ).dict()

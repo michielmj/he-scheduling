@@ -204,7 +204,7 @@ class MPTaskSolution(BaseModel):
 
 
 # Update forward references in MPTask
-MPTask.update_forward_refs()
+MPTask.model_rebuild()
 
 
 # Request Model
