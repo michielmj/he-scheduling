@@ -1,7 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
 from he_scheduling.core.version import get_version
-from he_scheduling.api.v1.master_planning import router as master_planning
+from he_scheduling.core.celery import celery
+from he_scheduling.api.v1.master_planning import router as master_planning_v1
+from he_scheduling.api.v2.master_planning import router as master_planning_v2
+
 
 app = FastAPI(
     title="HE Scheduling API",
@@ -9,7 +12,9 @@ app = FastAPI(
     version=get_version(),
 )
 
-app.include_router(router=master_planning)
+app.include_router(router=master_planning_v1)
+if celery:
+    app.include_router(router=master_planning_v2)
 
 
 @app.get("/")

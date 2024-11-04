@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, model_validator
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Union
 
 
 class MPResource(BaseModel):
@@ -204,7 +204,7 @@ class MPTaskSolution(BaseModel):
 
 
 # Update forward references in MPTask
-MPTask.update_forward_refs()
+MPTask.model_rebuild()
 
 
 # Request Model
@@ -249,3 +249,11 @@ class MPModelResponse(BaseModel):
         default_factory=list,
         description="List of task solutions representing the scheduling results."
     )
+
+
+# Task ID Model
+class MPJobStatusResponse(BaseModel):
+    job_id: str
+    status: str
+    result: MPModelResponse = None
+    error: str = None

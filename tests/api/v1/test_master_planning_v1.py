@@ -1,4 +1,4 @@
-# File: tests/api/v1/test_master_planning.py
+# File: tests/api/v1/test_master_planning_v1.py
 
 import pytest
 from fastapi.testclient import TestClient
@@ -40,7 +40,7 @@ def sample_request_data():
             "id": "P1",
             "product_type": "TypeA",
             "target_date": 15,
-            "late_date": 20,
+            "latest_date": 20,
             "weight_positive": 2,
             "weight_negative": 3,
             "weight_late": 30,
@@ -65,13 +65,14 @@ def sample_request_data():
                     ],
                     "alternative_resources": [2]
                 }
-            }
+            },
+            "finish_task_id": "T2",
         },
         {
             "id": "P2",
             "product_type": "TypeB",
             "target_date": 20,
-            "late_date": 30,
+            "latest_date": 30,
             "weight_positive": 1,
             "weight_negative": 4,
             "weight_late": 40,
@@ -96,7 +97,8 @@ def sample_request_data():
                     ],
                     "alternative_resources": [3]
                 }
-            }
+            },
+            "finish_task_id": "T4"
         }
     ]
 
@@ -203,7 +205,7 @@ def test_schedule_endpoint_invalid_input():
                 "id": "P1",
                 "product_type": "TypeA",
                 "target_date": 15,
-                "late_date": 20,
+                "latest_date": 20,
                 "weight_positive": 2,
                 "weight_negative": 3,
                 "weight_late": 30,
