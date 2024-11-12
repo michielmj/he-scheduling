@@ -44,6 +44,7 @@ flake8 = "^7.1.1"
 httpx = "^0.27.2"
 mypy = "^1.11.2"
 setuptools = "^75.1.0"
+cython = "^3.0.11"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.14.0"
@@ -54,5 +55,5 @@ testpaths = ["tests"]  # Specify where pytest should look for tests
 addopts = "--disable-warnings"  # Additional options for pytest
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", "setuptools>=42", "wheel", "Cython"]
 build-backend = "poetry.core.masonry.api"
