@@ -21,7 +21,10 @@ setup(
     url="https://github.com/michielmj/he-scheduling",
     packages=find_packages(),
     include_package_data=True,
-    ext_modules=cythonize(extensions),
+    ext_modules=cythonize(
+        extensions,
+        annotate=True,  # Add this line to enable annotation
+    ),
     zip_safe=False,
     install_requires=[
         "fastapi>=0.115.0,<0.116.0",

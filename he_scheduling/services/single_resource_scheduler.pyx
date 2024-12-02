@@ -97,8 +97,8 @@ cdef class Task:
 cdef class Resource(TaskResource):
 
     cdef public str resource_id
-    cdef Task head
-    cdef Task tail
+    cdef public Task head
+    cdef public Task tail
 
     def __init__(self, resource_id):
         self.resource_id = resource_id
@@ -227,21 +227,21 @@ cdef class SchedulingTask(Task):
         self._start = max(self.earliest_start, value)
 
     cpdef move_out(self):
-        super().move_out()
+        super(SchedulingTask, self).move_out()
         self.invalidate()
 
     cpdef move_in(self):
-        super().move_in()
+        super(SchedulingTask, self).move_in()
         self.invalidate()
 
     cpdef insert(self, Task task):
         cdef SchedulingTask sched_task = <SchedulingTask> task
-        super().insert(sched_task)
+        super(SchedulingTask, self).insert(sched_task)
         sched_task.invalidate()
 
     cpdef drop(self):
         self.invalidate()
-        super().drop()
+        super(SchedulingTask, self).drop()
 
 
 cpdef int schedule_forward(SchedulingTask t):
@@ -321,7 +321,7 @@ cdef class SchedulingResource(Resource):
     # We'll access them and cast when necessary.
 
     def __init__(self, resource_id):
-        super().__init__(resource_id)
+        super(SchedulingResource, self).__init__(resource_id)
 
     cpdef int schedule(self):
         cdef SchedulingTask tail_task
