@@ -366,6 +366,10 @@ class SchedulingTask(Task):
         self.invalidate()
         super(SchedulingTask, self).drop()
 
+    def merge(self):
+        super(SchedulingTask, self).merge()
+        self.invalidate()
+
 
 def improvement_move_in(task: SchedulingTask, dry_run: bool = True) -> int:
     if not task.previous:
@@ -390,14 +394,19 @@ def improvement_move_in(task: SchedulingTask, dry_run: bool = True) -> int:
     return t1_as + t2_as - t1_cs - t2_cs
 
 
-def score(head: SchedulingTask):
-    score = 0
-    t = head
+def score(task: SchedulingTask):
+    s = 0
+    t = task
     while t:
-        score += max(0, t.target - t.start)
+        s += max(0, t.start - t.target)
         t = t.next
 
-    return score
+    t = task.previous
+    while t:
+        s += max(0, t.start - t.target)
+        t = t.previous
+
+    return s
 
 
 class SchedulingResource(Resource[SchedulingTask]):
@@ -428,18 +437,26 @@ class SchedulingResource(Resource[SchedulingTask]):
         else:
             return improvement
 
-    def find_after(self, t: int) -> Optional[SchedulingTask]:
+    def find_after(self, after: int) -> Optional[SchedulingTask]:
 
         task = self.tail
         nxt = None
-        while task and task.start > t:
+        while task and task.start > after:
             nxt = task
             task = task.previous
 
         return nxt
 
+    def find_slack(self, after: int, amount: int) -> Optional[SchedulingTask]:
+        t = self.find_after(after)
+
+        while t and t.slack < amount:
+            t = t.next
+
+        return t
+
     def insert_best(self, task: SchedulingTask, branch: bool = False):
-        nxt = self.find_after(task.target)
+        nxt = self.find_slack(task.target, task.min_margin_before + task.duration)
         while nxt and nxt.target <= task.target:
             nxt = nxt.next
 
@@ -452,7 +469,11 @@ class SchedulingResource(Resource[SchedulingTask]):
             # try improvement by moving next in
             while improvement_move_in(nxt, dry_run=False) < 0:
                 pass
-        elif not branch:
+        elif branch:
+            task.__branch__ = uuid4().bytes
+            task.previous = self.tail
+            task.invalidate()
+        else:
             self.add_tail(task)
 
     def score(self) -> int:
